@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "مساعد الطالب الذكي",
+    "slug": "smart-student-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "extra": {
+      "supportsRTL": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smartstudent.ai"
+    },
+    "android": {
+      "package": "com.smartstudent.ai",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "يحتاج التطبيق للوصول إلى الصور لتغيير صورتك الشخصية أو رفع صورة الدرس."
+        }
+      ],
+      "expo-status-bar"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.firebase/
+.env
+.env.*
+*.log
+.DS_Store
+expo-app/node_modules/
+expo-app/.expo/
+expo-app/dist/

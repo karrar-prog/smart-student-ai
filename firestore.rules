@@ -1,0 +1,93 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: smart_student_app
+// Document ID: global_state
+// Fields:
+//   - adminCredentials: map (optional) - Demo admin login configuration
+//   - schools: list (required, max 500 items) - Registered schools
+//   - stages: list (required, max 1000 items) - Academic stages per school
+//   - subjects: list (required, max 2000 items) - Subjects and teacher assignments
+//   - lessons: list (required, max 5000 items) - Smart AI lessons and quizzes
+//   - students: list (required, max 10000 items) - Student profiles, points, and history
+//   - rooms: list (required, max 2000 items) - Live multiplayer challenge rooms
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidList(listField, maxSize) {
+      return listField is list && listField.size() <= maxSize;
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in both create and update)
+    // ===============================================================
+
+    function isValidGlobalState(data) {
+      return data is map &&
+        hasRequiredFields(['schools', 'stages', 'subjects', 'lessons', 'students', 'rooms']) &&
+        request.resource.data.schools is list &&
+        request.resource.data.stages is list &&
+        request.resource.data.subjects is list &&
+        request.resource.data.lessons is list &&
+        request.resource.data.students is list &&
+        request.resource.data.rooms is list &&
+        isValidList(data.schools, 500) &&
+        isValidList(data.stages, 1000) &&
+        isValidList(data.subjects, 2000) &&
+        isValidList(data.lessons, 5000) &&
+        isValidList(data.students, 10000) &&
+        isValidList(data.rooms, 2000) &&
+        (!('adminCredentials' in data) || data.adminCredentials is map);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Global state synchronization document for the Smart Student Assistant prototype
+    match /smart_student_app/global_state {
+      allow get, list: if true;
+      allow create, update: if isValidGlobalState(request.resource.data);
+      allow delete: if false;
+    }
+
+    // Default deny for all other collections and documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
